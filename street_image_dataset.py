@@ -16,8 +16,8 @@ class StreetImageDataset(Dataset):
 
         length = 0
         for root, dirs, files in os.walk(imageRootDir):
-            pics = [x for x in files if self.image_filter(x)]
-            length += len(pics)
+            #pics = [x for x in files if self.image_filter(x)]
+            length += len(files)
 
         self.imageRootDir = imageRootDir
         self.transform = transform
@@ -29,11 +29,11 @@ class StreetImageDataset(Dataset):
     def __getitem__(self, idx):
         # return a specific image from the filesystem
         for root, dirs, files in os.walk(self.imageRootDir):
-            pics = [x for x in files if self.image_filter(x)]
-            idx -= len(pics)
+            # pics = [x for x in files if self.image_filter(x)]
+            idx -= len(files)
             if (idx <= 0):
-                idx += len(pics)
-                file = root + '/' + pics[idx]
+                idx += len(files)
+                file = root + '/' + files[idx]
                 break
         
         # read in the file as a PIL image

@@ -24,7 +24,7 @@ cd /home/luketerry/distributed_dino_embedding
 conda activate /home/jroth/.conda/envs/mct
 
 srun python run_distributed_process.py \
-    --embedding_path="/ourdisk/hpc/ai2es/luketerry/embeddings" \
+    --embedding_path="/ourdisk/hpc/ai2es/luketerry/embeddings2" \
     --data_path="/ourdisk/hpc/ai2es/jroth/data/NYSDOT_m4er5dez4ab/NYSDOT_m4er5dez4ab" \
     --num_gpus=4 \
     --size=4 \
