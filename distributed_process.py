@@ -12,11 +12,15 @@ import pickle
 
 
 
-def run(rank, size, dataloader, model, embedding_dir):
+def run(rank, size, dataloader, embedding_dir):
     """ embed this rank's data"""
+
+    # get the model, according to this processes rank
+    model = dino_model(rank)
     for image, file in iter(dataloader):
         # get the dino embedding
-        embedding = dino_model()(image)
+        # im = image.to('cuda')
+        embedding = dino_model(rank)(image)
         # save the file somewhere
         directories = file[0].split('/')
         path = embedding_dir + '/' + directories[-2] + '/'
@@ -24,7 +28,7 @@ def run(rank, size, dataloader, model, embedding_dir):
             os.makedirs(path)
         torch.save(embedding, path + directories[-1][:-4] + '.pt') 
 
-def dino_model():
+def dino_model(rank):
     """get the dino model"""
     # os.environ['TORCH_HOME'] = '/scratch/jroth/'
     # os.environ['TORCH_HUB'] = '/scratch/jroth/'
@@ -34,7 +38,7 @@ def dino_model():
     # mymodel = vit_small(14, 4)
     # mymodel.load_state_dict(state)
     model.eval()
-    return model.to('cpu')
+    return model #.to(torch.device('cuda'))
 
 def get_data_loader():
     """ get the data loader"""
@@ -55,26 +59,25 @@ def get_data_loader():
 
     return loader
 
-def init_process(rank, size, fn, embedding_dir, backend='gloo'):
+def init_process(rank, size, fn, embedding_dir, num_gpus, backend='nccl'):
     """ Initialize the distributed environment. """
     os.environ['MASTER_ADDR'] = '127.0.0.1'
     os.environ['MASTER_PORT'] = '29501'
     dist.init_process_group(backend, rank=rank, world_size=size)
     dataloader = get_data_loader()
-    model = dino_model()
-
-    
-    fn(rank, size, dataloader, dino_model, embedding_dir)
+    torch.cuda.set_device(rank % num_gpus)
+    fn(rank, size, dataloader, embedding_dir)
 
 
 if __name__ == "__main__":
+    num_gpus = 1
     size = 2
     processes = []
     mp.set_start_method("spawn")
     embedding_dir = "./embeddings"
 
     for rank in range(size):
-        p = mp.Process(target=init_process, args=(rank, size, run, embedding_dir))
+        p = mp.Process(target=init_process, args=(rank, size, run, embedding_dir, num_gpus))
         p.start()
         processes.append(p)
 

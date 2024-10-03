@@ -12,15 +12,16 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--embedding_path", type=str, required=True)
     parser.add_argument("--size", type=int, required=True)
+    parser.add_argument("--num_gpus", type=int, required=True)
     
     args = vars(parser.parse_args())
 
     processes = []
     mp.set_start_method("spawn")
     size = args["size"]
-    
+
     for rank in range(size):
-        p = mp.Process(target=init_process, args=(rank, size, run, args["embedding_path"]))
+        p = mp.Process(target=init_process, args=(rank, size, run, args["embedding_path"], args["num-gpus"]))
         p.start()
         processes.append(p)
 
