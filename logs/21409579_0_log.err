@@ -1,0 +1,9 @@
+usage: run_distributed_process.py [-h] --data_path DATA_PATH --embedding_path
+                                  EMBEDDING_PATH --size SIZE --num_gpus
+                                  NUM_GPUS
+run_distributed_process.py: error: the following arguments are required: --num_gpus
+usage: run_distributed_process.py [-h] --data_path DATA_PATH --embedding_path
+                                  EMBEDDING_PATH --size SIZE --num_gpus
+                                  NUM_GPUS
+run_distributed_process.py: error: the following arguments are required: --num_gpus
+srun: error: c830: tasks 0-1: Exited with exit code 2
