@@ -22,7 +22,7 @@ if __name__ == "__main__":
     size = args["size"]
 
     for rank in range(size):
-        p = mp.Process(target=init_process, args=(rank, size, run, args["embedding_path"], args["num-gpus"], args["data_path"]))
+        p = mp.Process(target=init_process, args=(rank, size, run, args["embedding_path"], args["num_gpus"], args["data_path"]))
         p.start()
         processes.append(p)
 
