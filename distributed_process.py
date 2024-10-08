@@ -9,18 +9,19 @@ from torchvision.transforms import v2
 import torchvision.transforms as transforms
 import torchvision
 import pickle
+from argparse import ArgumentParser
+from pathlib import Path
 
 
-
-def run(rank, size, dataloader, embedding_dir):
+def run(dataloader, embedding_dir):
     """ embed this rank's data"""
 
     # get the model, according to this processes rank
-    model = dino_model(rank)
+    model = dino_model()
     for image, file in iter(dataloader):
         # get the dino embedding
         # im = image.to('cuda')
-        embedding = dino_model(rank)(image)
+        embedding = dino_model()(image)
         # save the file somewhere
         directories = file[0].split('/')
         path = embedding_dir + '/' + directories[-2] + '/'
@@ -28,7 +29,7 @@ def run(rank, size, dataloader, embedding_dir):
             os.makedirs(path)
         torch.save(embedding, path + directories[-1][:-4] + '.pt') 
 
-def dino_model(rank):
+def dino_model():
     """get the dino model"""
     # os.environ['TORCH_HOME'] = '/scratch/jroth/'
     # os.environ['TORCH_HUB'] = '/scratch/jroth/'
@@ -59,28 +60,18 @@ def get_data_loader(path):
 
     return loader
 
-def init_process(rank, size, fn, embedding_dir, num_gpus, data_path, backend='nccl'):
+def init_process(fn, embedding_dir, data_path, backend='nccl'):
     """ Initialize the distributed environment. """
-    os.environ['MASTER_ADDR'] = '127.0.0.1'
-    os.environ['MASTER_PORT'] = '29501'
-    dist.init_process_group(backend, rank=rank, world_size=size)
+
+    dist.init_process_group(backend="nccl")
     dataloader = get_data_loader(data_path)
-    torch.cuda.set_device(rank % num_gpus)
-    fn(rank, size, dataloader, embedding_dir)
+    torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
+    fn(dataloader, embedding_dir)
 
 
 if __name__ == "__main__":
-    num_gpus = 1
-    size = 2
-    processes = []
-    mp.set_start_method("spawn")
-    embedding_dir = "./embeddings"
-    data_path="./20k_bronx/rdma/flash/hulk/raid/csutter/cron/data/NYSDOT_m4er5dez4ab/20230516"
-
-    for rank in range(size):
-        p = mp.Process(target=init_process, args=(rank, size, run, embedding_dir, num_gpus, data_path))
-        p.start()
-        processes.append(p)
-
-    for p in processes:
-        p.join()
+    parser = ArgumentParser()
+    parser.add_argument("--embedding_dir", type=str, default='./embeddings')
+    parser.add_argument("--data_dir", type=str, default='./20k_bronx/rdma/flash/hulk/raid/csutter/cron/data/NYSDOT_m4er5dez4ab/20230516')
+    args = vars(parser.parse_args())
+    init_process(run, args["embedding_dir"], args["data_dir"])
