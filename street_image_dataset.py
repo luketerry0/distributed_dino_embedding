@@ -61,8 +61,9 @@ if __name__ == "__main__":
                     )
 
     dataset = StreetImageDataset("./test_bronx", transform=transform)
-    data = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
+    data = DataLoader(dataset, batch_size=10, shuffle=False, num_workers=1)
 
 
-    for image, file in data:
-        print(file)
+    image, file = next(iter(data))
+    print(image.nelement()*image.element_size())
+    print(file)

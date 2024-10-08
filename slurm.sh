@@ -23,10 +23,12 @@ cd /home/luketerry/distributed_dino_embedding
 # activating a version of my environment
 conda activate /home/jroth/.conda/envs/mct
 
-srun python run_distributed_process.py \
-    --embedding_path="/ourdisk/hpc/ai2es/luketerry/embeddings2" \
-    --data_path="/ourdisk/hpc/ai2es/jroth/data/NYSDOT_m4er5dez4ab/NYSDOT_m4er5dez4ab" \
-    --num_gpus=4 \
-    --size=4 \
+torchrun \
+    --standalone \
+    --nnodes=1 \
+    --nproc-per-node=4 \
+    distributed_process.py \
+        --data_dir=./ourdisk/hpc/ai2es/jroth/data/NYSDOT_m4er5dez4ab/NYSDOT_m4er5dez4ab \
+        --embedding_dir=/ourdisk/hpc/ai2es/luketerry/batched_embeddings
 
 
