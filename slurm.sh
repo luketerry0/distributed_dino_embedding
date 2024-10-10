@@ -15,6 +15,13 @@
 #SBATCH --partition=ai2es
 #SBATCH --chdir=/home/luketerry/distributed_dino_embedding
 
+# get the IP of the node used for the master process
+nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
+nodes_array=($nodes)
+head_node=${nodes_array[0]}
+head_node_ip=$(srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")
+
+
 EXPDIR=/home/luketerry/distributed_dino_embedding
 cd /home/luketerry/distributed_dino_embedding
 
@@ -24,11 +31,14 @@ cd /home/luketerry/distributed_dino_embedding
 conda activate /home/jroth/.conda/envs/mct
 
 torchrun \
-    --standalone \
-    --nnodes=1 \
+    --nnodes=$SLURM_JOB_NUM_NODES \
     --nproc-per-node=4 \
     distributed_process.py \
-        --data_dir=./ourdisk/hpc/ai2es/jroth/data/NYSDOT_m4er5dez4ab/NYSDOT_m4er5dez4ab \
+        --data_dir=/ourdisk/hpc/ai2es/jroth/data/NYSDOT_m4er5dez4ab/NYSDOT_m4er5dez4ab \
         --embedding_dir=/ourdisk/hpc/ai2es/luketerry/batched_embeddings
 
+    # --rdzv_id $RANDOM \
+    # --rdzv_backend c10d \
+    # --rdzv_endpoint "$head_node_ip:64425" \
+    # --standalone \
 

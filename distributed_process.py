@@ -14,14 +14,13 @@ from pathlib import Path
 import uuid
 
 @torch.no_grad()
-def run(dataloader, embedding_dir, model):
+def run(dataloader, embedding_dir):
     """ embed this rank's data"""
+    model = dino_model()
     # get the model, according to this processes rank
     for image, file in iter(dataloader):
         # get the dino embedding
-        init_memory = torch.cuda.memory_allocated()
         im = image.to('cuda')
-        init_memory = torch.cuda.memory_allocated()
         embedding = model(im)
         del im
 
@@ -33,9 +32,9 @@ def run(dataloader, embedding_dir, model):
         del embedding
 
         with open(embedding_dir + '/' + stamp + '_filenames.pickle', 'wb') as f:
-            print(len(file))
             pickle.dump(file, f)
         torch.cuda.empty_cache()
+        print(f"wrote file with uuid {stamp}")
 
 @torch.no_grad()
 def dino_model():
@@ -72,11 +71,10 @@ def get_data_loader(path):
 
 def init_process(fn, embedding_dir, data_path, backend='nccl'):
     """ Initialize the distributed environment. """
-    model = dino_model()
     dist.init_process_group(backend="nccl")
     dataloader = get_data_loader(data_path)
     torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
-    fn(dataloader, embedding_dir, model)
+    fn(dataloader, embedding_dir)
 
 
 if __name__ == "__main__":
