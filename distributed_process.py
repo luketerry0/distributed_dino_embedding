@@ -12,6 +12,7 @@ import pickle
 from argparse import ArgumentParser
 from pathlib import Path
 import uuid
+import numpy as np
 
 @torch.no_grad()
 def run(dataloader, embedding_dir, model):
@@ -29,8 +30,10 @@ def run(dataloader, embedding_dir, model):
         stamp = str(uuid.uuid1()) # uuid generated based on time and node (should be resistant to collision)
         if not os.path.exists(embedding_dir):
             os.makedirs(embedding_dir)
-        torch.save(embedding, embedding_dir + '/' + stamp + '.pt') 
+        e = embedding.to('cpu').numpy()
+        np.save(embedding_dir + '/' + stamp + '.npy', e)
         del embedding
+        del e
 
         with open(embedding_dir + '/' + stamp + '_filenames.pickle', 'wb') as f:
             print(len(file))
