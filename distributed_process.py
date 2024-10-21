@@ -42,6 +42,8 @@ def run(dataloader, embedding_dir):
 @torch.no_grad()
 def dino_model():
     """get the dino model"""
+    #TODO add OS.ENVRION["TORCH_HOME"]
+
     # DINOv2 vit-s (14) with registers
     model = torch.hub.load('facebookresearch/dinov2', 'dinov2_vitb14_reg', verbose=False)
     model.eval()
@@ -84,6 +86,8 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--embedding_dir", type=str, default='./embeddings')
     parser.add_argument("--data_dir", type=str, default='./20k_bronx/rdma/flash/hulk/raid/csutter/cron/data/NYSDOT_m4er5dez4ab/20230516')
+    parser.add_argument("--batch_size", type=int, default=64)
+
     
     args = vars(parser.parse_args())
     init_process(run, args["embedding_dir"], args["data_dir"])

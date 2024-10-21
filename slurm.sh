@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks=4
-#SBATCH --job-name=dino_embedding
+#SBATCH --job-name=64_dino_embedding
 #SBATCH --time=12:00:00
 #SBATCH --output=/home/luketerry/distributed_dino_embedding/logs/%j_0_log.out
 #SBATCH --error=/home/luketerry/distributed_dino_embedding/logs/%j_0_log.err
@@ -34,8 +34,9 @@ torchrun \
     --nnodes=$SLURM_JOB_NUM_NODES \
     --nproc-per-node=4 \
     distributed_process.py \
-        --data_dir=/ourdisk/hpc/ai2es/jroth/data/NYSDOT_m4er5dez4ab/NYSDOT_m4er5dez4ab \
-        --embedding_dir=/ourdisk/hpc/ai2es/luketerry/batched_embeddings
+        --data_dir=/ourdisk/hpc/ai2es/jroth/data/Skyline_6464 \
+        --embedding_dir=/ourdisk/hpc/ai2es/luketerry/skyline_embeddings_64/ \
+        --batch_size=64
 
     # --rdzv_id $RANDOM \
     # --rdzv_backend c10d \
